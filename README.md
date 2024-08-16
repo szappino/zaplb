@@ -33,9 +33,8 @@ it works using a round-robin technique to deliver the request to the backends.
 
 ### Possible future implementations
 ---
-- [ ] pass the configuration file from CLI parameter
+- [x] pass the configuration file from CLI parameter
 - [ ] HTTPS
-- [ ] use the tokio runtime to make the load balancer multi threaded
 - [ ] more flexible configuration
 - [ ] backend health check
 - [ ] other balancing methods:

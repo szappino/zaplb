@@ -8,11 +8,11 @@ use crate::config::Config;
 use crate::target::Target;
 
 #[derive(Clone)]
-pub struct ZapLB {
+pub struct ZapLb {
     pub config: Arc<Mutex<Config>>,
 }
 
-impl ZapLB {
+impl ZapLb {
     pub async fn run(&self) -> Result<()> {
         let config = self.config.clone();
 
@@ -30,8 +30,8 @@ impl ZapLB {
                 .app_data(web::Data::new(config_data))
                 .default_service(web::route().to(handle_request))
         })
-        .workers(4)
         .bind((addr, port))?
+        .workers(8)
         .run()
         .await?;
 
@@ -103,9 +103,9 @@ fn choose_backend(targets: &mut Vec<Target>) -> Target {
     targets.push(backend.clone());
     backend
 }
-pub fn new(config: Arc<Mutex<Config>>) -> ZapLB {
+pub fn new(config: Arc<Mutex<Config>>) -> ZapLb {
 
     SimpleLogger::new().init().unwrap();
 
-    ZapLB { config }
+    ZapLb { config }
 }

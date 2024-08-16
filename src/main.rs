@@ -1,20 +1,11 @@
-use std::fs::File;
-use std::sync::{Arc, Mutex};
 use anyhow::Result;
-use crate::config::Config;
-
-// TODO: move to another file
-pub mod config;
-pub mod target;
-pub mod zap_lb;
-
+use zapLB::init_load_balancer;
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), String> {
 
-    let config_file: File = File::open("config.json")?;
-    let config: Arc<Mutex<Config>> = Config::new(config_file)?;
-
-    let zap_lb = zap_lb::new(config);
-    zap_lb.run().await
+     match init_load_balancer().await {
+          Ok(()) => Ok(()),
+          Err(e) => Err(e.to_string()),
+     }
 }
