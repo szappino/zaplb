@@ -1,4 +1,4 @@
-****# ZapLB
+# ZapLB
 ---
 Basic L4 load balancer written with the purpose to learn [Rust](https://www.rust-lang.org/)
 
