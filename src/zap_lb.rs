@@ -2,7 +2,7 @@ use actix_web::{web, App, HttpServer, HttpRequest, HttpResponse};
 use reqwest::Client;
 use std::sync::{Arc, Mutex};
 use anyhow::{Result};
-use simple_logger::SimpleLogger;
+
 
 use crate::config::Config;
 use crate::target::Target;
@@ -103,9 +103,7 @@ fn choose_backend(targets: &mut Vec<Target>) -> Target {
     targets.push(backend.clone());
     backend
 }
+
 pub fn new(config: Arc<Mutex<Config>>) -> ZapLb {
-
-    SimpleLogger::new().init().unwrap();
-
     ZapLb { config }
 }
