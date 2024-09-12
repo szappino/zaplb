@@ -1,0 +1,35 @@
+name: Deploy Zap LoadBalancer
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    env:
+      PRODUCTION_FOLDER: ${{ secrets.PRODUCTION_FOLDER }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Build project
+        run: cargo build --release # Builds the project in release mode for production
+
+      - name: Copy build to production folder
+        if: success() # Ensures this step only runs if the build is successful
+        run: |
+          echo "Copying build artifacts to production folder"
+          cp -r target/release/* $PRODUCTION_FOLDER
