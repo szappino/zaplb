@@ -26,10 +26,31 @@ jobs:
           override: true
 
       - name: Build project
-        run: cargo build --release # Builds the project in release mode for production
+        run: cargo build --release
+
+      # - name: Run tests
+      #   run: cargo test --verbose
 
       - name: Copy build to production folder
-        if: success() # Ensures this step only runs if the build is successful
+        if: success()
         run: |
           echo "Copying build artifacts to production folder"
           cp -r target/release/* $PRODUCTION_FOLDER
+
+# notify-on-failure:
+#     if: failure()
+#     runs-on: self-hosted
+#     steps:
+#       - name: Send failure notification
+#         uses: dawidd6/action-send-mail@v3
+#         with:
+#           server_address: smtp.gmail.com
+#           server_port: 465
+#           username: ${{ secrets.SMTP_USERNAME }}
+#           password: ${{ secrets.SMTP_PASSWORD }}
+#           subject: Deploy zapLB fallito: ${{ github.workflow }}
+#           body: |
+#             L'action di deploy del zapLB (${{ github.workflow }}) ha fallito.
+#             Controlla i log per maggiori dettagli.
+#           to: ${{ secrets.EMAIL }}
+#           from: ${{ secrets.EMAIL }}
