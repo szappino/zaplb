@@ -25,37 +25,41 @@ jobs:
           toolchain: stable
           override: true
 
+      - name: Post to Slack channel for starting build
+        id: slack-start
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: "Build started for ${{ github.event.head_commit.url }}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
       - name: Build project
         run: cargo build --release
-        
+        continue-on-error: true
+
+      - name: Post to Slack channel for failed build
+        if: ${{ failure() }}
+        id: slack-fail
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: "Build failed: ${{ github.event.head_commit.url }}\nError in build step."
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
       - name: Copy build to production folder
-        if: success()
+        if: ${{ success() }}
         run: |
           echo "Copying build artifacts to production folder"
           cp -r target/release/* $PRODUCTION_FOLDER
-        - name: Post to a Slack channel
-          id: slack
-          uses: slackapi/slack-github-action@v1.27.0
-          with:
-            channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
-            slack-message: "GitHub build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
-          env:
-            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-# notify-on-failure:
-#     if: failure()
-#     runs-on: self-hosted
-#     steps:
-#       - name: Send failure notification
-#         uses: dawidd6/action-send-mail@v3
-#         with:
-#           server_address: smtp.gmail.com
-#           server_port: 465
-#           username: ${{ secrets.SMTP_USERNAME }}
-#           password: ${{ secrets.SMTP_PASSWORD }}
-#           subject: Deploy zapLB fallito: ${{ github.workflow }}
-#           body: |
-#             L'action di deploy del zapLB (${{ github.workflow }}) ha fallito.
-#             Controlla i log per maggiori dettagli.
-#           to: ${{ secrets.EMAIL }}
-#           from: ${{ secrets.EMAIL }}
+      - name: Post to Slack channel for successful build
+        if: ${{ success() }}
+        id: slack-success
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: "Build succeeded: ${{ github.event.head_commit.url }}\nArtifacts copied to production folder."
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
