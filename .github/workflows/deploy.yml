@@ -40,7 +40,7 @@ jobs:
 
       - name: Post to Slack channel for failed build
         if: ${{ failure() }}
-        id: slack-fail
+        id: slack-fail-build
         uses: slackapi/slack-github-action@v1.27.0
         with:
           channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
@@ -53,13 +53,24 @@ jobs:
         run: |
           echo "Copying build artifacts to production folder"
           cp -r target/release/* $PRODUCTION_FOLDER
+        continue-on-error: true
 
-      - name: Post to Slack channel for successful build
+      - name: Post to Slack channel for failed copy
+        if: ${{ failure() }}
+        id: slack-fail-copy
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
+          slack-message: "Build succeeded, but copying to production folder failed: ${{ github.event.head_commit.url }}\nError in copy step."
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Post to Slack channel for successful deployment
         if: ${{ success() }}
         id: slack-success
         uses: slackapi/slack-github-action@v1.27.0
         with:
           channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
-          slack-message: "Build succeeded: ${{ github.event.head_commit.url }}\nArtifacts copied to production folder."
+          slack-message: "Build and deployment succeeded: ${{ github.event.head_commit.url }}\nArtifacts copied to production folder."
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
